@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="760" viewBox="0 0 1800 760" role="img" aria-labelledby="title desc">
+  <title id="title">Event Radar technical architecture</title>
+  <desc id="desc">Horizontal architecture showing X and Truth Social sources, source connectors, EventRadarService, OpenAI classification, SQLite persistence, alert decisioning, FastAPI, the HTTP relay, and the React dashboard.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#172033" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#536273"/>
+    </marker>
+    <style>
+      .title { font: 700 32px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#182337; }
+      .subtitle { font: 400 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#647184; }
+      .section { font: 700 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#667386; letter-spacing:1.5px; }
+      .cardTitle { font: 700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#172033; }
+      .cardBody { font: 400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#5d6979; }
+      .pill { font: 600 12px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#334156; }
+      .icon { font: 700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#ffffff; text-anchor:middle; dominant-baseline:middle; }
+      .line { stroke:#536273; stroke-width:2.2; fill:none; marker-end:url(#arrow); }
+      .lineSoft { stroke:#9aa6b5; stroke-width:1.7; fill:none; marker-end:url(#arrow); stroke-dasharray:6 6; }
+    </style>
+  </defs>
+
+  <rect width="1800" height="760" fill="#f5f7fa"/>
+  <text x="70" y="66" class="title">Event Radar — Technical Architecture</text>
+  <text x="70" y="94" class="subtitle">Local-first ingestion, structured classification, persisted audit trail, operator API, and controlled downstream alerting</text>
+
+  <text x="70" y="145" class="section">PUBLIC SOURCES</text>
+  <text x="355" y="145" class="section">CONNECTORS</text>
+  <text x="690" y="145" class="section">LOCAL CORE</text>
+  <text x="1040" y="145" class="section">DECISION + DATA</text>
+  <text x="1390" y="145" class="section">INTERFACES</text>
+
+  <!-- Sources -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="180" width="220" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="108" cy="217" r="20" fill="#24292f"/>
+    <text x="108" y="218" class="icon">X</text>
+    <text x="140" y="214" class="cardTitle">X API</text>
+    <text x="140" y="238" class="cardBody">Official API source</text>
+    <text x="90" y="264" class="cardBody">Stream + catch-up polling</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="70" y="330" width="220" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="108" cy="367" r="20" fill="#6b4eff"/>
+    <text x="108" y="368" class="icon">TS</text>
+    <text x="140" y="364" class="cardTitle">Truth Social</text>
+    <text x="140" y="388" class="cardBody">Authenticated source</text>
+    <text x="90" y="414" class="cardBody">Session-backed collection</text>
+  </g>
+
+  <!-- Connectors -->
+  <g filter="url(#shadow)">
+    <rect x="355" y="180" width="260" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="395" cy="217" r="20" fill="#1677b8"/>
+    <text x="395" y="218" class="icon">XC</text>
+    <text x="428" y="214" class="cardTitle">X connector</text>
+    <text x="428" y="238" class="cardBody">Normalize + checkpoint</text>
+    <rect x="378" y="252" width="118" height="22" rx="11" fill="#e8f3fa"/>
+    <text x="437" y="267" class="pill" text-anchor="middle">rate-limit backoff</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="355" y="330" width="260" height="140" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="395" cy="367" r="20" fill="#6b4eff"/>
+    <text x="395" y="368" class="icon">TC</text>
+    <text x="428" y="364" class="cardTitle">Truth Social connector</text>
+    <text x="428" y="388" class="cardBody">HTTP polling first</text>
+    <rect x="378" y="405" width="205" height="26" rx="13" fill="#f1edff"/>
+    <text x="481" y="422" class="pill" text-anchor="middle">Playwright Chromium fallback</text>
+    <text x="378" y="452" class="cardBody">Operator-provided cookie state</text>
+  </g>
+
+  <!-- Core -->
+  <g filter="url(#shadow)">
+    <rect x="690" y="235" width="290" height="210" rx="24" fill="#182337" stroke="#182337"/>
+    <circle cx="735" cy="280" r="23" fill="#d65108"/>
+    <text x="735" y="281" class="icon">ER</text>
+    <text x="772" y="278" class="cardTitle" style="fill:#ffffff">EventRadarService</text>
+    <text x="772" y="303" class="cardBody" style="fill:#cad2dd">Single-process orchestrator</text>
+    <rect x="718" y="330" width="235" height="28" rx="14" fill="#26354f"/>
+    <text x="836" y="348" class="pill" style="fill:#edf2f7" text-anchor="middle">persist + connector checkpoints</text>
+    <rect x="718" y="367" width="235" height="28" rx="14" fill="#26354f"/>
+    <text x="836" y="385" class="pill" style="fill:#edf2f7" text-anchor="middle">classification + usage accounting</text>
+    <rect x="718" y="404" width="235" height="28" rx="14" fill="#26354f"/>
+    <text x="836" y="422" class="pill" style="fill:#edf2f7" text-anchor="middle">activity + SSE event bus</text>
+  </g>
+
+  <!-- Decision and data -->
+  <g filter="url(#shadow)">
+    <rect x="1040" y="175" width="280" height="110" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1080" cy="214" r="20" fill="#0f8a6a"/>
+    <text x="1080" y="215" class="icon">AI</text>
+    <text x="1113" y="210" class="cardTitle">OpenAI Responses API</text>
+    <text x="1113" y="235" class="cardBody">Strict structured classification</text>
+    <text x="1065" y="263" class="cardBody">Failure is recorded; no heuristic score</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1040" y="330" width="280" height="110" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1080" cy="369" r="20" fill="#596f8d"/>
+    <text x="1080" y="370" class="icon">DB</text>
+    <text x="1113" y="365" class="cardTitle">SQLite / WAL</text>
+    <text x="1113" y="390" class="cardBody">Raw + normalized + analysis trail</text>
+    <text x="1065" y="418" class="cardBody">Accounts · alerts · activity · latency · feedback</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1040" y="485" width="280" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1080" cy="523" r="20" fill="#d65108"/>
+    <text x="1080" y="524" class="icon">✓</text>
+    <text x="1113" y="519" class="cardTitle">Decision policy</text>
+    <text x="1113" y="544" class="cardBody">Threshold + duplicate suppression</text>
+    <text x="1065" y="571" class="cardBody">Dry run · suppress · send · fail</text>
+  </g>
+
+  <!-- Interfaces -->
+  <g filter="url(#shadow)">
+    <rect x="1390" y="185" width="300" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1430" cy="223" r="20" fill="#2c7a7b"/>
+    <text x="1430" y="224" class="icon">↗</text>
+    <text x="1463" y="219" class="cardTitle">Configured HTTP relay</text>
+    <text x="1463" y="244" class="cardBody">POST /v1/messages</text>
+    <text x="1415" y="271" class="cardBody">Operator-owned Telegram delivery boundary</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1390" y="355" width="300" height="115" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1430" cy="395" r="20" fill="#009688"/>
+    <text x="1430" y="396" class="icon">API</text>
+    <text x="1463" y="391" class="cardTitle">FastAPI</text>
+    <text x="1463" y="416" class="cardBody">REST · SSE · health · OpenAPI</text>
+    <rect x="1415" y="435" width="150" height="22" rx="11" fill="#e4f5f2"/>
+    <text x="1490" y="450" class="pill" text-anchor="middle">127.0.0.1 by default</text>
+  </g>
+  <g filter="url(#shadow)">
+    <rect x="1390" y="525" width="300" height="105" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="1430" cy="563" r="20" fill="#149eca"/>
+    <text x="1430" y="564" class="icon">UI</text>
+    <text x="1463" y="559" class="cardTitle">React / Vite dashboard</text>
+    <text x="1463" y="584" class="cardBody">Triage · controls · latency · costs</text>
+    <text x="1415" y="611" class="cardBody">Bundled static assets served by FastAPI</text>
+  </g>
+
+  <!-- Flow arrows -->
+  <path class="line" d="M290 232 H355"/>
+  <path class="line" d="M290 382 H355"/>
+  <path class="line" d="M615 232 C650 232 655 285 690 285"/>
+  <path class="line" d="M615 400 C650 400 655 360 690 360"/>
+
+  <path class="line" d="M980 286 C1010 286 1010 230 1040 230"/>
+  <path class="lineSoft" d="M1040 255 C1010 255 1010 310 980 310"/>
+  <path class="line" d="M980 350 H1040"/>
+  <path class="line" d="M980 405 C1015 405 1005 535 1040 535"/>
+
+  <path class="line" d="M1320 535 C1355 535 1355 237 1390 237"/>
+  <path class="line" d="M980 390 C1190 390 1190 412 1390 412"/>
+  <path class="line" d="M1320 385 C1350 385 1360 412 1390 412"/>
+  <path class="line" d="M1540 470 V525"/>
+
+  <!-- Telemetry -->
+  <g filter="url(#shadow)">
+    <rect x="690" y="535" width="290" height="95" rx="20" fill="#ffffff" stroke="#dbe1e8"/>
+    <circle cx="730" cy="572" r="18" fill="#78879a"/>
+    <text x="730" y="573" class="icon">$</text>
+    <text x="762" y="568" class="cardTitle">Usage + FX telemetry</text>
+    <text x="762" y="592" class="cardBody">Local model usage · X usage · ECB FX</text>
+    <text x="715" y="616" class="cardBody">Best-effort OpenAI project cost data when configured</text>
+  </g>
+  <path class="lineSoft" d="M835 535 V445"/>
+
+  <text x="70" y="705" class="subtitle">Security boundary: the application API is unauthenticated and intended to remain loopback-only unless protected by an external authenticated access layer.</text>
+  <text x="70" y="732" class="subtitle">Secrets, cookies, databases, logs, and environment-specific endpoints remain local configuration and are not part of the repository.</text>
+</svg>

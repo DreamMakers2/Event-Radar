@@ -1,0 +1,20 @@
+from __future__ import annotations
+
+import uvicorn
+
+from event_radar.config import get_settings
+
+
+def main() -> None:
+    settings = get_settings()
+    uvicorn.run(
+        "event_radar.main:app",
+        host=settings.app_host,
+        port=settings.app_port,
+        reload=False,
+        log_level=settings.log_level.lower(),
+    )
+
+
+if __name__ == "__main__":
+    main()

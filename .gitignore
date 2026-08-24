@@ -1,0 +1,46 @@
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Runtime state
+var/
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.pid
+*.log
+
+# Private configuration and credentials
+.env
+.env.*
+!.env.example
+config/env.sh
+config/*.local.*
+config/*.cookie*
+config/*cookies*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Frontend
+frontend/node_modules/
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
